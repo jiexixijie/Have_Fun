@@ -2,7 +2,7 @@
 #include "stdafx.h"
 #include <stack>
 #include <queue>
-
+#include <typeinfo>
 using namespace std;
 
 template<class T>
@@ -53,6 +53,7 @@ public:
 	void LevelOrder(void(*Visit)(T &x)){ printf("层次遍历:"); LevelOrder(Visit, root); printf("\n"); }
 	void Gen_PreAIn(T Pre[],T In[],int len);  //根据先序遍历和中序遍历生成树
 	void Print_Parent(void(*Visit)(T &x), T Data) { Visit(Data); printf("的祖先结点:"); Print_Parent(Visit, root, Data); printf("\n"); } //打印结点的祖先结点
+	int WPL();  //计算WPL值 所有叶结点的权重*路径长度 之和
 protected:
 	BTNode<T> *root;
 private:
@@ -308,4 +309,40 @@ bool BinaryTree<T>::Print_Parent(void(*Visit)(T &x), BTNode<T> *p,T Data) {
 		}
 	}
 	return false;
+}
+
+template<class T>
+int BinaryTree<T>::WPL() {    //层次遍历
+	if (!root) {
+		printf("error:该树为空树\n");
+		return 0;
+	}
+	if (typeid(T) != typeid(int)) {
+		printf("请使用data为Int的树进行计算\n");
+		return -1;
+	}
+	BTNode<T> *end, *p;//end 记录每层的最后一个结点来记录深度
+	end = root;
+	queue<BTNode<T>*> q;
+	int result = 0, length = 0;
+	q.push(end);
+	while (!q.empty()) {
+		p = q.front(); q.pop();
+		if (!p->lchild && !p->rchild) {  //p为叶子结点
+			result += length * p->data;
+		}
+		else {
+			if (p->lchild) {
+				q.push(p->lchild);
+			}
+			if (p->rchild) {
+				q.push(p->rchild);
+			}
+		}
+		if (p == end && !q.empty()) {
+			length++;
+			end = q.back();  //最后一个是下一层的尾结点
+		}
+	}
+	return result;
 }
